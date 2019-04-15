@@ -1,5 +1,3 @@
-console.log('Hello world')
-
 const baseState = function () {
   return [null, null, null, null, null, null, null, null, null];
 };
@@ -8,7 +6,6 @@ let historyState = [];
 let currentState, turn;
 
 let resetBoard = function() {
-  console.log("Called resetBoard");
   currentState = baseState();
   historyState = [];
   turn = 'X';
@@ -16,29 +13,26 @@ let resetBoard = function() {
 };
 
 let updateBoard = function (state) {
-  console.log("Called updateBoard");
   let board = document.querySelector('#game-board');
-  console.log(board);
-  if (!board) {
-    console.log("Didn't find board.");
-    return;
-  }
+  if (!board) return;
   board.innerHTML = buildBoard(state || currentState);
 };
 
 let buildBoard = function (state) {
-  let rows = '<table><tbody>';
-  rows += buildSquares(state);
+  let winner = isWinner();
+  let rows = winner ? '<p><strong>' + winner + ' is the winner!</p></strong><table><tbody>' : '<table><tbody>';
+  rows += buildSquares(state, winner);
   rows += '</tbody></table><p><button id="play-again">Play Again</button></p>';
+  rows += buildHistory();
   return rows;
 };
 
-let buildSquares = function (state) {
+let buildSquares = function (state, winner) {
   let rows = '';
   state.forEach(function (square, id) {
     let value = square ? square : '';
     let selected = square ? ' aria-pressed="true"' : '';
-    let disabled = square ? ' disabled' : '';
+    let disabled = square || winner ? ' disabled' : '';
     if (isFirstInRow(id)) {
       rows += '<tr>'
     }
@@ -61,6 +55,23 @@ let isLastInRow = function (id) {
   return ((id + 1) % 3 == 0);
 };
 
+let isWinner = function () {
+	let wins = [
+		[0,1,2],
+		[3,4,5],
+		[6,7,8],
+		[0,3,6],
+		[1,4,7],
+		[2,5,8],
+		[0,4,8],
+		[2,4,6]
+	];
+	let isWinner = wins.filter(function (win) {
+		return (currentState[win[0]] && currentState[win[0]] === currentState[win[1]] && currentState[win[0]] === currentState[win[2]]);
+	});
+	return (isWinner.length > 0 ? currentState[isWinner[0][0]] : false);
+};
+
 let renderTurn = function(square) {
   let selected = square.getAttribute('data-id');
   if (!selected) return;
@@ -68,6 +79,21 @@ let renderTurn = function(square) {
   historyState.push(currentState.slice());
   updateBoard();
   turn = (turn === 'X') ? 'O' : 'X';
+};
+
+let buildHistory = function () {
+  let history = '';
+  if (historyState.length > 0) {
+    history += '<h2>Game History</h2><ol>';
+    historyState.forEach(function (move, index) {
+      history += (
+        '<li><button data-history="' + move.toString()
+        + '">Go to move #' + (index+1) + '</button></li>'
+      );
+    });
+    history += '</ol>';
+  }
+  return history;
 };
 
 resetBoard();
@@ -80,4 +106,11 @@ document.addEventListener('click', function (event) {
     !(event.target.hasAttribute('disabled'))) {
     renderTurn(event.target);
   }
+  if (event.target.matches('[data-history]')) {
+		currentState = event.target.getAttribute('data-history').split(',');
+    turnNumber = Number(event.target.innerHTML.substr(-1));
+    historyState = historyState.slice(0, turnNumber);
+    console.log(historyState);
+    updateBoard();
+	}
 }, false);
