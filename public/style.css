@@ -1,0 +1,14 @@
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+.game-square {
+	background: none;
+	border: 1px solid #808080;
+	color: #272727;
+	font-size: 2em;
+	font-weight: bold;
+	height: 1.5em;
+	width: 1.5em;
+}
