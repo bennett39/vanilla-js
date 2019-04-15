@@ -13,7 +13,7 @@ let resetBoard = function() {
   historyState = [];
   turn = 'X';
   updateBoard();
-}
+};
 
 let updateBoard = function (state) {
   console.log("Called updateBoard");
@@ -24,14 +24,14 @@ let updateBoard = function (state) {
     return;
   }
   board.innerHTML = buildBoard(state || currentState);
-}
+};
 
 let buildBoard = function (state) {
   let rows = '<table><tbody>';
   rows += buildSquares(state);
   rows += '</tbody></table><p><button id="play-again">Play Again</button></p>';
   return rows;
-}
+};
 
 let buildSquares = function (state) {
   let rows = '';
@@ -55,10 +55,29 @@ let buildSquares = function (state) {
 
 let isFirstInRow = function (id) {
   return ((id + 1) % 3 == 1);
-}
+};
 
 let isLastInRow = function (id) {
   return ((id + 1) % 3 == 0);
-}
+};
+
+let renderTurn = function(square) {
+  let selected = square.getAttribute('data-id');
+  if (!selected) return;
+  currentState[selected] = turn;
+  historyState.push(currentState.slice());
+  updateBoard();
+  turn = (turn === 'X') ? 'O' : 'X';
+};
 
 resetBoard();
+
+document.addEventListener('click', function (event) {
+  if (event.target.matches('#play-again')) {
+    resetBoard();
+  }
+  if (event.target.matches('.game-square') &&
+    !(event.target.hasAttribute('disabled'))) {
+    renderTurn(event.target);
+  }
+}, false);
